@@ -1,0 +1,41 @@
+table{
+  width: 100%;
+}
+
+.simulated {
+  background: teal;
+}
+.reproduced {
+  background: olive;
+}
+
+.checkbox {
+  text-align: center;
+  justify-content:center;
+  width: 50px;
+}
+.reconciledup {
+  position: relative;
+}
+.reconciledup::before{
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: block;
+  border-right: 10px solid orange;
+}
+.active {
+	-webkit-animation: blink 1s ease infinite;
+	animation: blink 3s ease infinite;
+}
+@-webkit-keyframes blink {
+  0% {background: none;}
+  50% {background: orange;}
+  0% {background: none;}
+}
+@keyframes blink {
+  0% {background: none;}
+  50% {background: orange;}
+  0% {background: none;}
+}
