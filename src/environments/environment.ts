@@ -1,16 +1,23 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
+// import { CommonModule } from '@angular/common';
+import { ModuleWithProviders, NgModule } from '@angular/core';
+import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
+
+import { MockWebApiService } from '../app/mock-web-api.service';
+
+@NgModule({
+  imports: [
+    HttpClientInMemoryWebApiModule.forRoot(MockWebApiService, { delay: 500 })
+  ]
+})
+export class EnvironmentModule {
+  static forRoot(): ModuleWithProviders {
+    return {
+      ngModule: EnvironmentModule,
+      providers: []
+    };
+  }
+}
 
 export const environment = {
-  production: false
+  production: false,
 };
-
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.

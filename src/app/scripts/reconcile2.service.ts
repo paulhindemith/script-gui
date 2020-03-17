@@ -17,7 +17,7 @@ export class ReconcileService2 extends DataStoreHelperService {
   private activeId: scriptId = null;
   private locked = false;
   private firstestApply0 = true;
-  private url = 'http://localhost:8003/';
+  private url = 'http://localhost:8003';
   private httpOptions: any = {
     headers: new Headers({
         'Cache-Control':  'no-cache, no-store, must-revalidate, post-check=0, pre-check=0',
@@ -209,6 +209,10 @@ export class ReconcileService2 extends DataStoreHelperService {
         });
       });
     };
+  }
+
+  getElement(): element {
+    return this.element;
   }
 
   private setElement(elm: element) {

@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
-import { MockWebApiService } from '../app/mock-web-api.service';
+import { EnvironmentModule } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -18,11 +18,9 @@ import { MockWebApiService } from '../app/mock-web-api.service';
     MatCheckboxModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    HttpClientInMemoryWebApiModule.forRoot(MockWebApiService, {delay: 500})
+    EnvironmentModule.forRoot()
   ],
-  providers: [
-    MockWebApiService
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

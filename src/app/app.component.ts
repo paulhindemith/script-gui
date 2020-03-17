@@ -4,7 +4,7 @@
 
  import { DataStoreHelperService } from '../app/scripts/datastoreHelper.service';
  import { scriptId } from '../app/scripts/datastore2.service';
- import { ReconcileService2 } from '../app/scripts/reconcile2.service';
+ import { ReconcileService2, element } from '../app/scripts/reconcile2.service';
  import { Logger } from '../app/logger.service';
 
  @Component({
@@ -91,5 +91,8 @@ export class AppComponent implements OnInit {
   }
   isActive(id: scriptId): boolean {
     return this.rs.isActive(id);
+  }
+  getElement(): element {
+    return JSON.stringify(this.rs.getElement(), null, '\t');
   }
 }

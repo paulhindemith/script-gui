@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "script-gui",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -9,6 +9,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
+  "main": "dist/script-gui/main-es2015.js",
+  "types": "dist/index.d.ts",
   "private": true,
   "dependencies": {
     "@angular/animations": "~9.0.3",
