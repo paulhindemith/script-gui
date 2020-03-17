@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { DataStoreHelperService } from '../scripts/datastoreHelper.service';
 import { DataStoreService2, scriptId, f, fi, mapping, mappingI, s, View,
   simulateup, simulatedown, reproduceup, reproducedown  } from '../scripts/datastore2.service';
-import { Observable } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
+import { catchError, flatMap } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Logger } from '../../app/logger.service';
+import { StorageService } from '../scripts/storage.service';
 
 export type element = any;
 
@@ -28,12 +29,44 @@ export class ReconcileService2 extends DataStoreHelperService {
     }),
   };
 
-  constructor(protected logger: Logger, protected ds: DataStoreService2, private dh: DataStoreHelperService, private client: HttpClient) {
-    super(logger, ds);
+  constructor(protected logger: Logger,
+              protected ds: DataStoreService2,
+              private dh: DataStoreHelperService,
+              private client: HttpClient,
+              protected storage: StorageService) {
+    super(logger, ds, storage);
   }
 
-  initialize(): Observable<Error> {
-    return new Observable<Error>(subscriber => {
+  initialize(): Observable<null> {
+    return new Observable<null>(subscriber => {
+      const storageInitialize = () => {
+        const scripts = this.getScripts();
+        this.storage.initialize(scripts);
+        if (this.storage.hasData()) {
+          this.element = this.storage.getElement();
+          const v = this.storage.getV();
+          const array = Array.from(v.values());
+          array.shift();
+          const obs = from(array);
+          const setViews = flatMap((view: View): Observable<boolean> => {
+            console.log('called');
+            return this.dh.setView(view);
+          });
+
+          setViews(obs).subscribe({
+            next: (a) => {
+              console.log(a);
+            },
+            complete: () => {
+              console.log('called');
+              subscriber.complete();
+            }
+          });
+          return;
+        }
+        subscriber.complete();
+      };
+
       const cloneDs = () => {
         this.ds = new DataStoreService2();
         this.setScripts(this.dh.getScripts()).subscribe({
@@ -42,7 +75,7 @@ export class ReconcileService2 extends DataStoreHelperService {
             subscriber.error(err);
           },
           complete: () => {
-            subscriber.complete();
+            storageInitialize();
           }
         });
       };
@@ -80,13 +113,13 @@ export class ReconcileService2 extends DataStoreHelperService {
     return this.activeId === id;
   }
 
-  reconcile(): Observable<Error> {
+  reconcile(): Observable<null> {
     if (this.locked) {
       this.logger.info('Reconcile service is locked.');
       return null;
     }
     this.lock();
-    return new Observable<Error>(subscriber => {
+    return new Observable<null>(subscriber => {
       const ss = this.getScripts();
       this._reconcile(ss).subscribe({
         error: (err: Error) => {

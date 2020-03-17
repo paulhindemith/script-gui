@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { Observable, empty } from 'rxjs';
 
 import { Logger } from '../../app/logger.service';
-import { DataStoreService2, scriptId, f, fi, mapping, mappingI, s, V,
+import { DataStoreService2, scriptId, f, fi, mapping, mappingI, s, V, View,
   simulateup, simulatedown, reproduceup, reproducedown  } from '../scripts/datastore2.service';
+import { StorageService } from '../scripts/storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +12,7 @@ import { DataStoreService2, scriptId, f, fi, mapping, mappingI, s, V,
 export class DataStoreHelperService {
   private scripts: string[];
 
-  constructor(protected logger: Logger, protected ds: DataStoreService2) { }
+  constructor(protected logger: Logger, protected ds: DataStoreService2, protected storage: StorageService) { }
 
   getIds(): scriptId[] {
     const ids = Object.keys(this.scripts);
@@ -106,6 +107,7 @@ export class DataStoreHelperService {
         },
         complete: () => {
           this.logger.info(`simulatedUp ${id}`);
+          this.storage.saveVToStorage(this.ds.getV());
           subscriber.next(true);
         }
       });
@@ -122,6 +124,7 @@ export class DataStoreHelperService {
         },
         complete: () => {
           this.logger.info(`reproducedUp ${id}`);
+          this.storage.saveVToStorage(this.ds.getV());
           subscriber.next(true);
         }
       });
@@ -144,17 +147,34 @@ export class DataStoreHelperService {
         },
         complete: () => {
           this.logger.info(`down ${id}`);
+          this.storage.saveVToStorage(this.ds.getV());
           subscriber.next(true);
         }
       });
     });
   }
 
-  protected mappingScript() {
+  setView(view: View): Observable<boolean> {
+    console.log('called');
+    return new Observable<boolean>(subscriber => {
+      this.ds.apply(view.lastS, view.lastF).subscribe({
+        error: (err: Error) => {
+          err.message = `Could not down: ${err.message}`;
+          subscriber.error(err);
+        },
+        complete: () => {
+          this.logger.info(`applied v_(${view.lastS}, ${view.lastF})`);
+          subscriber.complete();
+        }
+      });
+    });
+  }
+
+  protected mappingScript(): (theS: s, theF: f) => Observable<null> {
     return (theS: s, theF: f): Observable<null> => empty();
   }
 
-  protected mappingIScript() {
+  protected mappingIScript(): (theS: s, theFi: fi) => Observable<null> {
     return (theS: s, theFi: fi): Observable<null> => empty();
   }
 

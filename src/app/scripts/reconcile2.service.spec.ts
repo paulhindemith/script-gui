@@ -1,6 +1,7 @@
 import { DataStoreHelperService } from '../scripts/datastoreHelper.service';
 import { DataStoreService2, View } from '../scripts/datastore2.service';
 import { ReconcileService2, element } from '../scripts/reconcile2.service';
+import { StorageService } from '../scripts/storage.service';
 import { asyncData } from '../../utility/asyncData';
 import { tick, fakeAsync } from '@angular/core/testing';
 import { Logger } from '../../app/logger.service';
@@ -10,16 +11,32 @@ describe('ReconcileService2', () => {
   let logger: Logger;
   let rs: ReconcileService2;
   let ds: DataStoreService2;
+  let storage: StorageService;
   let dh: DataStoreHelperService;
+  let store = {};
 
-  beforeEach(fakeAsync(() => {
+  beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get']);
     ds = new DataStoreService2();
     logger = new Logger();
-    dh = new DataStoreHelperService(logger, ds);
-    rs = new ReconcileService2(logger, ds, dh, httpClientSpy as any);
-    tick();
-  }));
+    storage = new StorageService();
+    dh = new DataStoreHelperService(logger, ds, storage);
+    rs = new ReconcileService2(logger, ds, dh, httpClientSpy as any, storage);
+
+    store = {};
+    spyOn(localStorage, 'getItem').and.callFake((key) => {
+      if (!store[key]) {
+        return null;
+      }
+      return store[key];
+    });
+    spyOn(localStorage, 'setItem').and.callFake((key, value) => {
+      return store[key] = value + '';
+    });
+    spyOn(localStorage, 'clear').and.callFake(() => {
+        store = {};
+    });
+  });
 
   it('getChanged', fakeAsync(() => {
     const expectedScript: string[] = ['0', 'logger/unit-test', 'k8sclient/unit-test'];
@@ -45,12 +62,6 @@ describe('ReconcileService2', () => {
     expect(ok).toBe(true);
     expect(theView.lastMappingID).toBe('s1:f0');
     expect(upDown).toBe('up');
-    // this.ds.apply(theView.lastS, theView.lastF).subscribe({
-    //   error: (err: Error) => {
-    //     fail(err);
-    //   }
-    // });
-    // tick();
   }));
 
   it('should reconcile', fakeAsync(() => {

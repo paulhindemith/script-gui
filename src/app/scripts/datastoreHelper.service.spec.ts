@@ -1,17 +1,20 @@
 import { DataStoreHelperService } from '../scripts/datastoreHelper.service';
 import { DataStoreService2 } from '../scripts/datastore2.service';
+import { StorageService } from '../scripts/storage.service';
 import { Logger } from '../../app/logger.service';
 import { tick, flush, fakeAsync } from '@angular/core/testing';
 
 describe('DataStoreHelperService', () => {
   let dh: DataStoreHelperService;
   let ds: DataStoreService2;
+  let storage: StorageService;
   let logger: Logger;
 
   beforeEach(fakeAsync(() => {
     ds = new DataStoreService2();
     logger = new Logger();
-    dh = new DataStoreHelperService(logger, ds);
+    storage = new StorageService();
+    dh = new DataStoreHelperService(logger, ds, storage);
     const expected: string[] = ['0', 'logger/unit-test', 'k8sclient/unit-test'];
     dh.setScripts(expected).subscribe({
       error: (err: Error) => {

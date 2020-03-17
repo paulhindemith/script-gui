@@ -13,6 +13,7 @@ import { tick, flush, fakeAsync, discardPeriodicTasks, ComponentFixture } from '
 
 describe('AppComponent', () => {
   const mockApiDelay = 500;
+  let store = {};
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -28,6 +29,21 @@ describe('AppComponent', () => {
         HttpClientInMemoryWebApiModule.forRoot(MockWebApiService, { delay: mockApiDelay })
       ]
     }).compileComponents();
+
+    store = {};
+    spyOn(localStorage, 'getItem').and.callFake((key) => {
+      if (!store[key]) {
+        return null;
+      }
+      return store[key];
+    });
+    spyOn(localStorage, 'setItem').and.callFake((key, value) => {
+      return store[key] = value + '';
+    });
+    spyOn(localStorage, 'clear').and.callFake(() => {
+        store = {};
+    });
+
   });
 
 
